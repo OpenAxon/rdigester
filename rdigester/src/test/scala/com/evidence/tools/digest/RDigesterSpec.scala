@@ -70,7 +70,7 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     assert(calculated == expected)
   }
 
-  it should "compute md5 digest given a series of serilized ctx" in {
+  it should "compute md5 digest given a series of serialized ctx" in {
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.md5Hex(data)
 
@@ -84,7 +84,7 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     assert(calculated == expected)
   }
 
-  it should "compute sha1 digest given a series of serilized ctx" in {
+  it should "compute sha1 digest given a series of serialized ctx" in {
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.sha1Hex(data)
 
@@ -98,7 +98,7 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     assert(calculated == expected)
   }
 
-  it should "compute sha256 digest given a series of serilized ctx" in {
+  it should "compute sha256 digest given a series of serialized ctx" in {
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.sha256Hex(data)
 
@@ -112,7 +112,7 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     assert(calculated == expected)
   }
 
-  it should "compute sha512 digest given a series of serilized ctx 2" in {
+  it should "compute sha512 digest given a series of serialized ctx 2" in {
     val expected = DigestUtils.sha256Hex("Hello World")
 
     var digester = new RDigester(Algorithm.Sha256)
