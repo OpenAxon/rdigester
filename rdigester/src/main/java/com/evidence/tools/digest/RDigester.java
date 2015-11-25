@@ -76,9 +76,6 @@ public class RDigester {
     /*
     // Test Driver
     public static void main(String[] args) {
-        //SHA512_Update(&ctx, "Hello, ", 7);
-        //SHA512_Update(&ctx, "world!2", 7);
-
         int alg = Algorithm.Md5.getValue();
         RDigester rDigester = new RDigester(Algorithm.Md5);
 

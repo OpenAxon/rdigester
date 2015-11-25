@@ -200,6 +200,17 @@ std::string RDigester::toHex(unsigned char *data, int len)
 
 size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const MD5_CTX *ctx)
 {
+    if( dstSize < (sizeof ctx->A +
+                   sizeof ctx->B +
+                   sizeof ctx->C +
+                   sizeof ctx->D +
+                   sizeof ctx->Nl +
+                   sizeof ctx->Nh +
+                   sizeof(MD5_LONG) * MD5_LBLOCK +
+                   sizeof ctx->num) ) {
+        return -1;
+    }
+    
     size_t i = 0;
     
     // A
@@ -279,6 +290,15 @@ MD5_CTX* RDigester::deserializeMd5Ctx(unsigned char *src)
 
 size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA256_CTX *ctx)
 {
+    if( dstSize < (sizeof(SHA_LONG) * 8 +
+                   sizeof ctx->Nl +
+                   sizeof ctx->Nh +
+                   sizeof(SHA_LONG) * SHA_LBLOCK +
+                   sizeof ctx->num +
+                   sizeof ctx->md_len) ) {
+        return -1;
+    }
+    
     size_t i = 0;
     
     // h
@@ -343,6 +363,16 @@ SHA256_CTX* RDigester::deserializeSha256Ctx(unsigned char *src)
 
 size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA512_CTX *ctx)
 {
+    if( dstSize < (sizeof(SHA_LONG64) * 8 +
+                   sizeof ctx->Nl +
+                   sizeof ctx->Nh +
+                   sizeof(SHA_LONG64) * SHA_LBLOCK +
+                   sizeof(unsigned char) * SHA512_CBLOCK +
+                   sizeof ctx->num +
+                   sizeof ctx->md_len) ) {
+        return -1;
+    }
+    
     size_t i = 0;
     
     // h
@@ -414,6 +444,18 @@ SHA512_CTX* RDigester::deserializeSha512Ctx(unsigned char *src)
 
 size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA_CTX *ctx)
 {
+    if( dstSize < (sizeof ctx->h0 +
+                   sizeof ctx->h1 +
+                   sizeof ctx->h2 +
+                   sizeof ctx->h3 +
+                   sizeof ctx->h4 +
+                   sizeof ctx->Nl +
+                   sizeof ctx->Nh +
+                   sizeof(SHA_LONG) * SHA_LBLOCK +
+                   sizeof ctx->num) ) {
+        return -1;
+    }
+    
     size_t i = 0;
     
     // h0
