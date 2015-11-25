@@ -1,3 +1,19 @@
+/**
+ * Copyright 2015 TASER International, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.evidence.tools.digest
 
 import java.util.UUID
@@ -96,16 +112,19 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     assert(calculated == expected)
   }
 
-  it should "compute sha512 digest given a series of serilized ctx" in {
-    val data = UUID.randomUUID().toString
-    val expected = DigestUtils.sha512Hex(data)
+  it should "compute sha512 digest given a series of serilized ctx 2" in {
+    val expected = DigestUtils.sha256Hex("Hello World")
 
-    var ctx = new RDigester(Algorithm.Sha512).init()
-    assert(ctx != null)
+    var digester = new RDigester(Algorithm.Sha256)
+    var ctx = digester.init()
 
-    data.foreach(char => ctx = new RDigester(Algorithm.Sha512).update(ctx, Array(char.toByte), 1))
-    val calculated = new RDigester(Algorithm.Sha512).finalChecksumHex(ctx)
+    digester = new RDigester(Algorithm.Sha256)
+    ctx = digester.update(ctx, "Hello World".getBytes, 11)
 
-    logger.info(s"[resumable] calculated $calculated == expected $expected")
-    assert(calculated == expected)
-  }}
+    val finalCheckSum = digester.finalChecksumHex(ctx)
+
+    logger.info(s"[resumable] calculated $finalCheckSum == expected $expected")
+    assert(finalCheckSum == expected)
+  }
+}
+
