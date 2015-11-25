@@ -10,34 +10,26 @@ extern "C" {
 /*
  * Class:     com_evidence_tools_digest_RDigester
  * Method:    init
- * Signature: (Ljava/lang/String;)[B
+ * Signature: (I)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_evidence_tools_digest_RDigester_init
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     com_evidence_tools_digest_RDigester
  * Method:    update
- * Signature: ([B[BI)[B
+ * Signature: (I[B[BI)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_evidence_tools_digest_RDigester_update
-  (JNIEnv *, jobject, jbyteArray, jbyteArray, jint);
-
-/*
- * Class:     com_evidence_tools_digest_RDigester
- * Method:    finalHash
- * Signature: ([B)[B
- */
-JNIEXPORT jbyteArray JNICALL Java_com_evidence_tools_digest_RDigester_finalHash
-  (JNIEnv *, jobject, jbyteArray);
+  (JNIEnv *, jobject, jint, jbyteArray, jbyteArray, jint);
 
 /*
  * Class:     com_evidence_tools_digest_RDigester
  * Method:    finalHashHex
- * Signature: ([B)Ljava/lang/String;
+ * Signature: (I[B)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_evidence_tools_digest_RDigester_finalHashHex
-  (JNIEnv *, jobject, jbyteArray);
+JNIEXPORT jstring JNICALL Java_com_evidence_tools_digest_RDigester_finalChecksumHex
+  (JNIEnv *, jobject, jint, jbyteArray);
 
 #ifdef __cplusplus
 }

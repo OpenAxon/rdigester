@@ -17,8 +17,9 @@ class RDigesterTester
 {
 public:
     static void sha512Test() {
-        unsigned char* digestState = new unsigned char[2048];
-        memset(digestState, 0, sizeof(unsigned char) * 2048);
+        size_t bufSize = 1024;
+        unsigned char* digestState = new unsigned char[bufSize];
+        memset(digestState, 0, sizeof(unsigned char) * bufSize);
         
         {
             std::cout << "digest 512 ...\n";
@@ -26,19 +27,19 @@ public:
             rdigester.update("Hello, ", 7);
             
             std::cout << "save state ...\n";
-            rdigester.serialize(digestState);
+            rdigester.serialize(digestState, bufSize);
         }
         
         {
             std::cout << "restore state ...\n";
             
             RDigester rdigester = RDigester(RDigester::Sha512);
-            rdigester.ctx(digestState);
+            rdigester.setCtx(digestState);
             
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
-            std::string checksum = rdigester.finalHex();
+            std::string checksum = rdigester.finalChecksumHex();
             std::cout << "checksum (1) == " << checksum << "\n";
         }
         
@@ -54,13 +55,14 @@ public:
             std::cout << "checksum (2) == " << RDigester::toHex(hash2, SHA512_DIGEST_LENGTH) << "\n";
         }
         
-        delete digestState;
+        delete[] digestState;
     }
 
 
     static void sha256Test() {
-        unsigned char* digestState = new unsigned char[2048];
-        memset(digestState, 0, sizeof(unsigned char) * 2048);
+        size_t bufSize = 1024;
+        unsigned char* digestState = new unsigned char[bufSize];
+        memset(digestState, 0, sizeof(unsigned char) * bufSize);
         
         {
             std::cout << "digest 256 ...\n";
@@ -68,19 +70,19 @@ public:
             rdigester.update("Hello, ", 7);
             
             std::cout << "save state ...\n";
-            rdigester.serialize(digestState);
+            rdigester.serialize(digestState, bufSize);
         }
         
         {
             std::cout << "restore state ...\n";
             
             RDigester rdigester = RDigester(RDigester::Sha256);
-            rdigester.ctx(digestState);
+            rdigester.setCtx(digestState);
             
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
-            std::string checksum = rdigester.finalHex();
+            std::string checksum = rdigester.finalChecksumHex();
             std::cout << "checksum (1) == " << checksum << "\n";
         }
         
@@ -96,12 +98,13 @@ public:
             std::cout << "checksum (2) == " << RDigester::toHex(hash2, SHA256_DIGEST_LENGTH) << "\n";
         }
         
-        delete digestState;
+        delete[] digestState;
     }
 
     static void sha1Test() {
-        unsigned char* digestState = new unsigned char[1024];
-        memset(digestState, 0, sizeof(unsigned char) * 1024);
+        size_t bufSize = 1024;
+        unsigned char* digestState = new unsigned char[bufSize];
+        memset(digestState, 0, sizeof(unsigned char) * bufSize);
         
         {
             std::cout << "digest sha1 ...\n";
@@ -109,19 +112,19 @@ public:
             rdigester.update("Hello, ", 7);
             
             std::cout << "save state ...\n";
-            rdigester.serialize(digestState);
+            rdigester.serialize(digestState, bufSize);
         }
         
         {
             std::cout << "restore state ...\n";
             
             RDigester rdigester = RDigester(RDigester::Sha1);
-            rdigester.ctx(digestState);
+            rdigester.setCtx(digestState);
             
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
-            std::string checksum = rdigester.finalHex();
+            std::string checksum = rdigester.finalChecksumHex();
             std::cout << "checksum (1) == " << checksum << "\n";
         }
 
@@ -137,10 +140,11 @@ public:
             std::cout << "checksum (2) == " << RDigester::toHex(hash2, SHA_DIGEST_LENGTH) << "\n";
         }
         
-        delete digestState;
+        delete[] digestState;
     }
 
     static void md5Test() {
+        size_t bufSize = 1024;
         unsigned char* digestState = new unsigned char[1024];
         memset(digestState, 0, sizeof(unsigned char) * 1024);
         
@@ -150,20 +154,20 @@ public:
             rdigester.update("Hello, ", 7);
             
             std::cout << "save state ...\n";
-            rdigester.serialize(digestState);
+            rdigester.serialize(digestState, bufSize);
         }
         
         {
             std::cout << "restore state ...\n";
             
             RDigester rdigester = RDigester(RDigester::Md5);
-            rdigester.ctx(digestState);
+            rdigester.setCtx(digestState);
             
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             rdigester.update("world!2", 7);
             
-            std::string checksum = rdigester.finalHex();
+            std::string checksum = rdigester.finalChecksumHex();
             std::cout << "checksum (1) == " << checksum << "\n";
         }
         
@@ -180,7 +184,46 @@ public:
             std::cout << "checksum (2) == " << RDigester::toHex(hash2, MD5_DIGEST_LENGTH) << "\n";
         }
         
-        delete digestState;
+        delete[] digestState;
+    }
+    
+    static void md5Test2() {
+        size_t bufSize = 1024;
+        unsigned char* digestState = new unsigned char[1024];
+        memset(digestState, 0, sizeof(unsigned char) * 1024);
+        
+        {
+            RDigester *rdigester = new RDigester(RDigester::Md5);
+            delete rdigester;
+            
+            rdigester = new RDigester(RDigester::Md5);
+            
+            std::cout << "save state ...\n";
+            rdigester->serialize(digestState, bufSize);
+            delete rdigester;
+            rdigester = new RDigester(RDigester::Md5, digestState);
+            
+            rdigester->update("world!2", 7);
+ 
+            std::cout << "save state ...\n";
+            rdigester->serialize(digestState, bufSize);
+            delete rdigester;
+            rdigester = new RDigester(RDigester::Md5, digestState);
+            
+            rdigester->update("world!2", 7);
+            
+            std::cout << "save state ...\n";
+            rdigester->serialize(digestState, bufSize);
+            delete rdigester;
+            rdigester = new RDigester(RDigester::Md5, digestState);
+            
+            rdigester->update("world!2", 7);
+            
+            std::string checksum = rdigester->finalChecksumHex();
+            std::cout << "checksum (1a) == " << checksum << "\n";
+        }
+        
+        delete[] digestState;
     }
 };
 
@@ -193,6 +236,7 @@ int main(int argc, const char * argv[]) {
     RDigesterTester::sha256Test();
     RDigesterTester::sha512Test();
     RDigesterTester::md5Test();
+    RDigesterTester::md5Test2();
 
     return 0;
 }

@@ -9,24 +9,31 @@
 #include "RDigester.hpp"
 
 using namespace com::evidence::tools::digest;
+using namespace std;
 
-RDigester::RDigester(const ChecksumAlg a) {
+RDigester::RDigester(ChecksumAlg a) {
     this->alg = a;
+    this->digestCtx = nullptr;
+
     switch (alg) {
         case Md5:
-            digestCtx= new MD5_CTX;
+            digestCtx = new MD5_CTX;
+            memset(digestCtx, 0, sizeof(MD5_CTX));
             MD5_Init((MD5_CTX *)digestCtx);
             break;
         case Sha1:
-            digestCtx= new SHA_CTX;
+            digestCtx = new SHA_CTX;
+            memset(digestCtx, 0, sizeof(MD5_CTX));
             SHA1_Init((SHA_CTX *)digestCtx);
             break;
         case Sha256:
-            digestCtx= new SHA256_CTX;
+            digestCtx = new SHA256_CTX;
+            memset(digestCtx, 0, sizeof(MD5_CTX));
             SHA256_Init((SHA256_CTX *)digestCtx);
             break;
         case Sha512:
-            digestCtx= new SHA512_CTX;
+            digestCtx = new SHA512_CTX;
+            memset(digestCtx, 0, sizeof(MD5_CTX));
             SHA512_Init((SHA512_CTX *)digestCtx);
             break;
         default:
@@ -34,56 +41,89 @@ RDigester::RDigester(const ChecksumAlg a) {
     }
 }
 
-RDigester::~RDigester() {
+RDigester::RDigester(ChecksumAlg a, unsigned char *ctxSerialized)
+{
+    this->alg = a;
+    this->digestCtx = nullptr;
+    
     switch (alg) {
         case Md5:
-            delete (MD5_CTX *)digestCtx;
+            digestCtx= deserializeMd5Ctx(ctxSerialized);
             break;
         case Sha1:
-            delete (SHA_CTX *)digestCtx;
+            digestCtx= deserializeSha1Ctx(ctxSerialized);
             break;
         case Sha256:
-            delete (SHA256_CTX *)digestCtx;
+            digestCtx= deserializeSha256Ctx(ctxSerialized);
             break;
         case Sha512:
-            delete (SHA512_CTX *)digestCtx;
+            digestCtx= deserializeSha512Ctx(ctxSerialized);
             break;
         default:
             break;
     }
 }
 
-size_t RDigester::serialize(unsigned char *dst)
+RDigester::~RDigester() {
+    if( digestCtx != nullptr )
+    {
+        switch (alg) {
+            case Md5:
+                delete (MD5_CTX *)digestCtx;
+                digestCtx = nullptr;
+                break;
+            case Sha1:
+                delete (SHA_CTX *)digestCtx;
+                digestCtx = nullptr;
+                break;
+            case Sha256:
+                delete (SHA256_CTX *)digestCtx;
+                digestCtx = nullptr;
+                break;
+            case Sha512:
+                delete (SHA512_CTX *)digestCtx;
+                digestCtx = nullptr;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+size_t RDigester::serialize(unsigned char *dst, size_t dstSize)
 {
+    memset(dst, 0, sizeof(unsigned char) * dstSize);
+    
     switch (alg) {
         case Md5:
-            return serialize(dst, (MD5_CTX *)digestCtx);
+            return serialize(dst, dstSize, (MD5_CTX *)digestCtx);
         case Sha1:
-            return serialize(dst, (SHA_CTX *)digestCtx);
+            return serialize(dst, dstSize, (SHA_CTX *)digestCtx);
         case Sha256:
-            return serialize(dst, (SHA256_CTX *)digestCtx);
+            return serialize(dst, dstSize, (SHA256_CTX *)digestCtx);
         case Sha512:
-            return serialize(dst, (SHA512_CTX *)digestCtx);
+            return serialize(dst, dstSize, (SHA512_CTX *)digestCtx);
         default:
             return 0;
     }
 }
 
-void RDigester::ctx(unsigned char *ctx) {
+void RDigester::setCtx(unsigned char *ctxSerialized) {
     switch (alg) {
         case Md5:
-            digestCtx = deserializeMd5Ctx(ctx);
+            digestCtx = deserializeMd5Ctx(ctxSerialized);
             break;
         case Sha1:
-            digestCtx = deserializeSha1Ctx(ctx);
+            digestCtx = deserializeSha1Ctx(ctxSerialized);
             break;
         case Sha256:
-            digestCtx = deserializeSha256Ctx(ctx);
+            digestCtx = deserializeSha256Ctx(ctxSerialized);
             break;
         case Sha512:
-            digestCtx = deserializeSha512Ctx(ctx);
+            digestCtx = deserializeSha512Ctx(ctxSerialized);
             break;
         default:
+            digestCtx = nullptr;
             break;
     }
 }
@@ -108,7 +148,7 @@ void RDigester::update(const void *data, size_t len)
     }
 }
 
-std::string RDigester::finalHex()
+std::string RDigester::finalChecksumHex()
 {
     unsigned char *hash = nullptr;
     std::string rv;
@@ -140,7 +180,7 @@ std::string RDigester::finalHex()
     
     
     if( hash != nullptr ) {
-        delete hash;
+        delete[] hash;
     }
     
     return rv;
@@ -158,17 +198,7 @@ std::string RDigester::toHex(unsigned char *data, int len)
     return s;
 }
 
-/*
- typedef struct MD5state_st
- {
- MD5_LONG A,B,C,D;
- MD5_LONG Nl,Nh;
- MD5_LONG data[MD5_LBLOCK];
- unsigned int num;
- } MD5_CTX;
- */
-
-size_t RDigester::serialize(unsigned char *dst, const MD5_CTX *ctx)
+size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const MD5_CTX *ctx)
 {
     size_t i = 0;
     
@@ -247,7 +277,7 @@ MD5_CTX* RDigester::deserializeMd5Ctx(unsigned char *src)
     return ctx;
 }
 
-size_t RDigester::serialize(unsigned char *dst, const SHA256_CTX *ctx)
+size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA256_CTX *ctx)
 {
     size_t i = 0;
     
@@ -311,7 +341,7 @@ SHA256_CTX* RDigester::deserializeSha256Ctx(unsigned char *src)
     return ctx;
 }
 
-size_t RDigester::serialize(unsigned char *dst, const SHA512_CTX *ctx)
+size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA512_CTX *ctx)
 {
     size_t i = 0;
     
@@ -382,17 +412,7 @@ SHA512_CTX* RDigester::deserializeSha512Ctx(unsigned char *src)
     return ctx;
 }
 
-/*
- struct SHAstate_st
- {
- SHA_LONG h0,h1,h2,h3,h4;
- SHA_LONG Nl,Nh;
- SHA_LONG data[SHA_LBLOCK];
- unsigned int num;
- } SHA_CTX;
- */
-
-size_t RDigester::serialize(unsigned char *dst, const SHA_CTX *ctx)
+size_t RDigester::serialize(unsigned char *dst, size_t dstSize, const SHA_CTX *ctx)
 {
     size_t i = 0;
     

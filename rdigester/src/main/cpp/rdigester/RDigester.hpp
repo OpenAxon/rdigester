@@ -20,18 +20,19 @@ class RDigester
 {
 public:
     enum ChecksumAlg {
-        Md5,
-        Sha1,
-        Sha256,
-        Sha512
+        Md5 = 0,
+        Sha1 = 1,
+        Sha256 = 2,
+        Sha512 = 3
     };
     
-    RDigester(const ChecksumAlg a);
+    RDigester(ChecksumAlg a);
+    RDigester(ChecksumAlg a, unsigned char *ctxSerialized);
     ~RDigester();
-    size_t serialize(unsigned char *dst);
-    void ctx(unsigned char *ctx);
+    size_t serialize(unsigned char *dst, size_t dstSize);
+    void setCtx(unsigned char *ctxSerialized);
     void update(const void *data, size_t len);
-    std::string finalHex();
+    std::string finalChecksumHex();
     
     static std::string toHex(unsigned char *data, int len);
 private:
@@ -45,8 +46,8 @@ private:
         } MD5_CTX;
     */
     
-    static size_t serialize(unsigned char *dst, const MD5_CTX *ctx);
-    static MD5_CTX* deserializeMd5Ctx(unsigned char *src);
+    size_t serialize(unsigned char *dst, size_t dstSize, const MD5_CTX *ctx);
+    MD5_CTX* deserializeMd5Ctx(unsigned char *src);
     
     /*
          typedef struct SHA256state_st
@@ -58,8 +59,8 @@ private:
          } SHA256_CTX;
      */
     
-    static size_t serialize(unsigned char *dst, const SHA256_CTX *ctx);
-    static SHA256_CTX* deserializeSha256Ctx(unsigned char *src);
+    size_t serialize(unsigned char *dst, size_t dstSize, const SHA256_CTX *ctx);
+    SHA256_CTX* deserializeSha256Ctx(unsigned char *src);
     
     /*
          typedef struct SHA512state_st
@@ -73,8 +74,8 @@ private:
              unsigned int num,md_len;
          } SHA512_CTX;
      */
-    static size_t serialize(unsigned char *dst, const SHA512_CTX *ctx);
-    static SHA512_CTX* deserializeSha512Ctx(unsigned char *src);
+    size_t serialize(unsigned char *dst, size_t dstSize, const SHA512_CTX *ctx);
+    SHA512_CTX* deserializeSha512Ctx(unsigned char *src);
     
     /*
          struct SHAstate_st
@@ -86,8 +87,8 @@ private:
          } SHA_CTX;
      */
     
-    static size_t serialize(unsigned char *dst, const SHA_CTX *ctx);
-    static SHA_CTX* deserializeSha1Ctx(unsigned char *src);
+    size_t serialize(unsigned char *dst, size_t dstSize, const SHA_CTX *ctx);
+    SHA_CTX* deserializeSha1Ctx(unsigned char *src);
     
     ChecksumAlg alg;
     void*       digestCtx;

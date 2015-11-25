@@ -4,6 +4,27 @@ version := "0.0.1-SNAPSHOT"
 
 organization := "com.evidence"
 
+resolvers += "Nexus" at "https://nexus.taservs.net/content/groups/public"
+
+resolvers += "Twitter" at "http://maven.twttr.com"
+
+// Test
+libraryDependencies ++= Seq(
+  "junit" % "junit" % "4.12" % "test",
+  "com.novocode" % "junit-interface" % "0.11" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.0" % "it,test",
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "it,test"
+)
+
+// Core
+libraryDependencies ++= Seq(
+  "ch.qos.logback" % "logback-classic" % "1.1.2",
+  "ch.qos.logback" % "logback-core" % "1.1.2",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+  "commons-codec" % "commons-codec" % "1.10"
+)
+
+
 // Although I think I've locked sufficiently, sometimes I get test
 // failures without this.
 //parallelExecution in Test := false
