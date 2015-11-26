@@ -10,10 +10,7 @@ resolvers += "Twitter" at "http://maven.twttr.com"
 
 // Test
 libraryDependencies ++= Seq(
-  "junit" % "junit" % "4.12" % "test",
-  "com.novocode" % "junit-interface" % "0.11" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.0" % "it,test",
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "it,test"
+  "org.scalatest" %% "scalatest" % "2.2.0" % "test"
 )
 
 // Core
@@ -24,55 +21,38 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.10"
 )
 
+val compileJniLibTask = taskKey[Int]("Build openssl JNI bindings")
+val cleanJniLibTask = taskKey[Int]("Clean openssl JNI bindings")
 
-// Although I think I've locked sufficiently, sometimes I get test
-// failures without this.
-//parallelExecution in Test := false
+lazy val rdigester = (project in file(".")).
+  settings(
+    compileJniLibTask := {
+      println("[jnilib] make all")
 
-/*
-scalacOptions ++= Seq("-unchecked", "-deprecation")
+      val result = sbt.Process("make" :: "-f" :: "Makefile" :: "all" :: Nil, Some(baseDirectory.value / "")) !
 
-// call make -f Makefile.native clean
-clean <<= (clean, resourceManaged in Compile, sourceDirectory, classDirectory in Compile,
-  managedClasspath in Compile) map { (clean, dir, src, classDir, runPath) => {
-  val home = System.getProperty("java.home")
-  val basePath = runPath.map(_.data.toString).reduceLeft(_ + ":" + _)
-  val classpath = classDir.toString + ":" + basePath
-  val result = sbt.Process(
-    "make" :: "-f" :: "Makefile.native" :: "clean" :: Nil,
-    None,
-    "COMPILE_PATH" -> classDir.toString,
-    "CLASSPATH" -> classpath,
-    "JAVA_HOME" -> home
-  ) ! ;
-  //
-  if (result != 0)
-    error("Error cleaning native library")
-  clean
-}
-}
+      if (result != 0) {
+        sys.error(s"Error cleaning native library [$result]")
+      }
 
-// call make -f Makefile.native all
-compile <<= (compile in Compile, resourceManaged in Compile, sourceDirectory, classDirectory in Compile,
-  managedClasspath in Compile) map { (compile, dir, src, classDir, runPath) => {
-  val superCompile = compile
-  val home = System.getProperty("java.home")
-  val basePath = runPath.map(_.data.toString).reduceLeft(_ + ":" + _)
-  val classpath = classDir.toString + ":" + basePath
-  val result = sbt.Process(
-    "make" :: "-f" :: "Makefile" :: "all" :: Nil,
-    None,
-    "COMPILE_PATH" -> classDir.toString,
-    "CLASSPATH" -> classpath,
-    "JAVA_HOME" -> home
-  ) ! ;
-  //
-  if (result != 0)
-    error("Error compiling native library")
-  superCompile
-}
-}
-*/
+      result
+    },
+    cleanJniLibTask := {
+      println("[jnilib] make clean")
+
+      val result = sbt.Process("make" :: "-f" :: "Makefile" :: "clean" :: Nil, Some(baseDirectory.value / "")) !
+
+      if (result != 0) {
+        sys.error(s"Error cleaning native library [$result]")
+      }
+
+      result
+    }
+  )
+
+sbt.Keys.compile <<= (sbt.Keys.compile in Compile) dependsOn compileJniLibTask
+
+sbt.Keys.clean <<= (sbt.Keys.clean in ThisScope) dependsOn cleanJniLibTask
 
 fork in run := true
 

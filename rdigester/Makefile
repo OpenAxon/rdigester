@@ -6,8 +6,9 @@ OUT=lib
 OBJDIR = ./target/obj
 SODIR = ./target/so
 SRCDIR = ./src/main/cpp/rdigester
+MKDIR_P = mkdir -p
 
-all: rdigester librdigesterjni.jnilib
+all: directories rdigester librdigesterjni.jnilib
 
 rdigester: main.o RDigester.o
 	$(CC) $(LDFLAGS) $(OBJDIR)/main.o $(OBJDIR)/RDigester.o -o $(SODIR)/rdigester
@@ -27,5 +28,10 @@ main.o: $(SRCDIR)/main.cpp
 RDigester.o: $(SRCDIR)/RDigester.cpp
 	$(CC) $(CFLAGS) $(SRCDIR)/RDigester.cpp -o $(OBJDIR)/RDigester.o
 
+directories:
+	@if test ! -d $(OBJDIR); then mkdir $(OBJDIR); else : ; fi
+	@if test ! -d $(SODIR); then mkdir $(SODIR); else : ; fi
+
 clean:
-	rm $(SODIR)/* $(OBJDIR)/*
+	@if test -d $(OBJDIR); then rm -r $(OBJDIR)/* $(OBJDIR); else : ; fi
+	@if test -d $(SODIR); then rm -r $(SODIR)/* $(SODIR); else : ; fi
