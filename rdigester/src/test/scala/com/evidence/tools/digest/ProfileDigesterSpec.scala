@@ -34,9 +34,10 @@ class ProfileDigesterSpec extends FlatSpec with Matchers with LazyLogging with B
 
   /*
       MacBook Pro (Retina, 15-inch, Late 2013), 2.3 GHz Intel Core i7, 16 GB 1600 MHz DDR3
-      MessageDigest:  ~ 8 seconds
-      BouncyCastle:   ~10 seconds
-      OpenSSL/JNI:    ~77 seconds
+      MessageDigest:                                ~ 9 seconds
+      BouncyCastle:                                 ~ 10 seconds
+      BouncyCastle with Encoded Ctx per iter:       ~ 25 seconds
+      This (OpenSSL/JNI):                           ~ 70+ seconds
    */
 
   it should "test how fast is java messagedigest (sha-256) impl?" in {
@@ -71,6 +72,29 @@ class ProfileDigesterSpec extends FlatSpec with Matchers with LazyLogging with B
     val elapsed = Seconds.secondsBetween(startTime, DateTime.now()).getSeconds
     logger.info(s"bouncycastle elapsed: $elapsed counter: $counter ${Hex.encodeHexString(resBuf)}")
   }
+
+  it should "test how fast is bouncy castle (sha-256) impl with ctx serialization?" in {
+    var counter = 0
+    val startTime = DateTime.now()
+    val data = "Hello World".getBytes
+    var encodedState:Array[Byte] = null
+    var digester = new SHA256Digest()
+
+    while( counter < 100000000 ) {
+      digester.update(data, 0, data.length)
+      encodedState = digester.getEncodedState
+      digester = new SHA256Digest(encodedState)
+      counter += 1
+    }
+
+    digester = new SHA256Digest(encodedState)
+    val resBuf:Array[Byte] = new Array[Byte](digester.getDigestSize())
+    digester.doFinal(resBuf, 0)
+
+    val elapsed = Seconds.secondsBetween(startTime, DateTime.now()).getSeconds
+    logger.info(s"bouncycastle with ctx serialization elapsed: $elapsed counter: $counter ${Hex.encodeHexString(resBuf)}")
+  }
+
 
   it should "test how fast is the openssl over jni (sha-256) impl?" in {
     var counter = 0

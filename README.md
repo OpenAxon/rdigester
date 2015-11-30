@@ -19,9 +19,10 @@ Serializable Java checksum (md5, sha1, sha256, sha512 using openssl native libra
 MacBook Pro (Retina, 15-inch, Late 2013), 2.3 GHz Intel Core i7, 16 GB 1600 MHz DDR3
 
 ```sh
-      MessageDigest:  ~ 9 seconds
-      BouncyCastle:   ~ 10 seconds
-      OpenSSL/JNI:    ~ 70+ seconds  (Slow!)
+      MessageDigest:                                ~ 9 seconds
+      BouncyCastle:                                 ~ 10 seconds
+      BouncyCastle with Encoded Ctx per iter:       ~ 25 seconds
+      This (OpenSSL/JNI):                           ~ 70+ seconds
 ```
 
 # Authors
