@@ -16,10 +16,15 @@
 
 package com.evidence.tools.digest;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 public class RDigester {
+    private static Config config = ConfigFactory.load();
+    private byte[] ctx;
+
     static {
-        System.out.println(System.getProperty("java.library.path"));
-        System.loadLibrary("rdigesterjni"); // hello.dll (Windows) or libhello.so (Unixes)
+        System.load(config.getString("rdigester.library.path"));
     }
 
     public enum Algorithm {
@@ -32,50 +37,51 @@ public class RDigester {
 
     public RDigester(Algorithm alg) {
         this.alg = alg;
+        this.ctx = init(alg.getValue());
+    }
+
+    public RDigester(Algorithm alg, byte[] ctx) {
+        this.alg = alg;
+        this.ctx = ctx;
+    }
+
+    public byte[] getCtx() {
+        return this.ctx;
     }
 
     public static String md5Hex(String data) {
         RDigester r = new RDigester(Algorithm.Md5);
-
-        byte[] ctx = r.init();
-        ctx = r.update(ctx, data.getBytes(), data.getBytes().length);
-        return r.finalChecksumHex(ctx);
+        r.update(data.getBytes(), data.getBytes().length);
+        return r.finalChecksumHex();
     }
 
     public static String sha1Hex(String data) {
         RDigester r = new RDigester(Algorithm.Sha1);
 
-        byte[] ctx = r.init();
-        ctx = r.update(ctx, data.getBytes(), data.getBytes().length);
-        return r.finalChecksumHex(ctx);
+        r.update( data.getBytes(), data.getBytes().length);
+        return r.finalChecksumHex();
     }
 
     public static String sha256Hex(String data) {
         RDigester r = new RDigester(Algorithm.Sha256);
 
-        byte[] ctx = r.init();
-        ctx = r.update(ctx, data.getBytes(), data.getBytes().length);
-        return r.finalChecksumHex(ctx);
+        r.update(data.getBytes(), data.getBytes().length);
+        return r.finalChecksumHex();
     }
 
     public static String sha512Hex(String data) {
         RDigester r = new RDigester(Algorithm.Sha512);
 
-        byte[] ctx = r.init();
-        ctx = r.update(ctx, data.getBytes(), data.getBytes().length);
-        return r.finalChecksumHex(ctx);
+        r.update(data.getBytes(), data.getBytes().length);
+        return r.finalChecksumHex();
     }
 
-    public byte[] init() {
-        return init(alg.getValue());
+    public void update(byte[] data, int length) {
+        this.ctx = update(alg.getValue(), this.ctx, data, length);
     }
 
-    public byte[] update(byte[] serilizedCtx, byte[] data, int length) {
-        return update(alg.getValue(), serilizedCtx, data, length);
-    }
-
-    public String finalChecksumHex(byte[] serilizedCtx) {
-        return finalChecksumHex(alg.getValue(), serilizedCtx);
+    public String finalChecksumHex() {
+        return finalChecksumHex(alg.getValue(), this.ctx);
     }
 
     private native byte[] init(int alg);

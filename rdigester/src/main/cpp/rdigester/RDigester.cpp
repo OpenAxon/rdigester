@@ -53,26 +53,11 @@ RDigester::RDigester(ChecksumAlg a, unsigned char *ctxSerialized)
 {
     this->alg = a;
     this->digestCtx = nullptr;
-    
-    switch (alg) {
-        case Md5:
-            digestCtx= deserializeMd5Ctx(ctxSerialized);
-            break;
-        case Sha1:
-            digestCtx= deserializeSha1Ctx(ctxSerialized);
-            break;
-        case Sha256:
-            digestCtx= deserializeSha256Ctx(ctxSerialized);
-            break;
-        case Sha512:
-            digestCtx= deserializeSha512Ctx(ctxSerialized);
-            break;
-        default:
-            break;
-    }
+    setCtx(ctxSerialized);
 }
 
-RDigester::~RDigester() {
+void RDigester::freeCtx()
+{
     if( digestCtx != nullptr )
     {
         switch (alg) {
@@ -98,6 +83,10 @@ RDigester::~RDigester() {
     }
 }
 
+RDigester::~RDigester() {
+    freeCtx();
+}
+
 size_t RDigester::serialize(unsigned char *dst, size_t dstSize)
 {
     memset(dst, 0, sizeof(unsigned char) * dstSize);
@@ -117,6 +106,8 @@ size_t RDigester::serialize(unsigned char *dst, size_t dstSize)
 }
 
 void RDigester::setCtx(unsigned char *ctxSerialized) {
+    freeCtx();
+    
     switch (alg) {
         case Md5:
             digestCtx = deserializeMd5Ctx(ctxSerialized);

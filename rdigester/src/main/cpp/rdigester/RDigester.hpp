@@ -38,12 +38,13 @@ public:
     RDigester(ChecksumAlg a, unsigned char *ctxSerialized);
     ~RDigester();
     size_t serialize(unsigned char *dst, size_t dstSize);
-    void setCtx(unsigned char *ctxSerialized);
     void update(const void *data, size_t len);
     std::string finalChecksumHex();
     
     static std::string toHex(unsigned char *data, int len);
 private:
+    void setCtx(unsigned char *ctxSerialized);
+
     /*
         typedef struct MD5state_st
         {
@@ -97,6 +98,7 @@ private:
     
     size_t serialize(unsigned char *dst, size_t dstSize, const SHA_CTX *ctx);
     SHA_CTX* deserializeSha1Ctx(unsigned char *src);
+    void freeCtx();
     
     ChecksumAlg alg;
     void*       digestCtx;

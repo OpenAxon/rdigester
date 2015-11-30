@@ -30,6 +30,9 @@ import org.scalatest.Matchers
  */
 
 class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeAndAfterAll {
+  override def beforeAll(): Unit = {
+  }
+
   it should "compute md5 digest" in {
     val data = UUID.randomUUID().toString
 
@@ -74,11 +77,17 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.md5Hex(data)
 
-    var ctx = new RDigester(Algorithm.Md5).init()
+    var ctx = new RDigester(Algorithm.Md5).getCtx()
     assert(ctx != null)
 
-    data.foreach(char => ctx = new RDigester(Algorithm.Md5).update(ctx, Array(char.toByte), 1))
-    val calculated = new RDigester(Algorithm.Md5).finalChecksumHex(ctx)
+    data.foreach(char => {
+      val digester = new RDigester(Algorithm.Md5, ctx)
+      digester.update(Array(char.toByte), 1)
+
+      ctx = digester.getCtx
+    })
+
+    val calculated = new RDigester(Algorithm.Md5, ctx).finalChecksumHex()
 
     logger.info(s"[resumable] calculated $calculated == expected $expected")
     assert(calculated == expected)
@@ -88,11 +97,17 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.sha1Hex(data)
 
-    var ctx = new RDigester(Algorithm.Sha1).init()
+    var ctx = new RDigester(Algorithm.Sha1).getCtx()
     assert(ctx != null)
 
-    data.foreach(char => ctx = new RDigester(Algorithm.Sha1).update(ctx, Array(char.toByte), 1))
-    val calculated = new RDigester(Algorithm.Sha1).finalChecksumHex(ctx)
+    data.foreach(char => {
+      val digester = new RDigester(Algorithm.Sha1, ctx)
+      digester.update(Array(char.toByte), 1)
+
+      ctx = digester.getCtx
+    })
+
+    val calculated = new RDigester(Algorithm.Sha1, ctx).finalChecksumHex()
 
     logger.info(s"[resumable] calculated $calculated == expected $expected")
     assert(calculated == expected)
@@ -102,26 +117,32 @@ class RDigesterSpec extends FlatSpec with Matchers with LazyLogging with BeforeA
     val data = UUID.randomUUID().toString
     val expected = DigestUtils.sha256Hex(data)
 
-    var ctx = new RDigester(Algorithm.Sha256).init()
+    var ctx = new RDigester(Algorithm.Sha256).getCtx()
     assert(ctx != null)
 
-    data.foreach(char => ctx = new RDigester(Algorithm.Sha256).update(ctx, Array(char.toByte), 1))
-    val calculated = new RDigester(Algorithm.Sha256).finalChecksumHex(ctx)
+    data.foreach(char => {
+      val digester = new RDigester(Algorithm.Sha256, ctx)
+      digester.update(Array(char.toByte), 1)
+
+      ctx = digester.getCtx
+    })
+
+    val calculated = new RDigester(Algorithm.Sha256, ctx).finalChecksumHex()
 
     logger.info(s"[resumable] calculated $calculated == expected $expected")
     assert(calculated == expected)
   }
 
-  it should "compute sha512 digest given a series of serialized ctx 2" in {
+  it should "compute sha512 digest given a series of serialized ctx" in {
     val expected = DigestUtils.sha256Hex("Hello World")
 
     var digester = new RDigester(Algorithm.Sha256)
-    var ctx = digester.init()
+    val ctx = digester.getCtx()
 
-    digester = new RDigester(Algorithm.Sha256)
-    ctx = digester.update(ctx, "Hello World".getBytes, 11)
+    digester = new RDigester(Algorithm.Sha256, ctx)
+    digester.update("Hello World".getBytes, 11)
 
-    val finalCheckSum = digester.finalChecksumHex(ctx)
+    val finalCheckSum = digester.finalChecksumHex()
 
     logger.info(s"[resumable] calculated $finalCheckSum == expected $expected")
     assert(finalCheckSum == expected)

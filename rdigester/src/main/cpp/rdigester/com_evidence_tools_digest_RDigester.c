@@ -40,7 +40,7 @@ jstring toJString(JNIEnv * env, const std::string &s) {
 }
 
 jbyteArray serializeCtx(JNIEnv * env, RDigester *digester) {
-    size_t ctxBufferSize = 1024;
+    size_t ctxBufferSize = 512;
     unsigned char ctxBuffer[ctxBufferSize];
     memset(ctxBuffer, 0, sizeof(unsigned char) * ctxBufferSize);
 

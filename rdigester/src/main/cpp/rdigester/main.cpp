@@ -41,9 +41,8 @@ public:
         {
             std::cout << "restore state ...\n";
             
-            RDigester rdigester = RDigester(RDigester::Sha512);
-            rdigester.setCtx(digestState);
-            
+            RDigester rdigester = RDigester(RDigester::Sha512, digestState);
+
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
@@ -84,9 +83,8 @@ public:
         {
             std::cout << "restore state ...\n";
             
-            RDigester rdigester = RDigester(RDigester::Sha256);
-            rdigester.setCtx(digestState);
-            
+            RDigester rdigester = RDigester(RDigester::Sha256, digestState);
+
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
@@ -126,9 +124,8 @@ public:
         {
             std::cout << "restore state ...\n";
             
-            RDigester rdigester = RDigester(RDigester::Sha1);
-            rdigester.setCtx(digestState);
-            
+            RDigester rdigester = RDigester(RDigester::Sha1, digestState);
+
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             
@@ -168,9 +165,8 @@ public:
         {
             std::cout << "restore state ...\n";
             
-            RDigester rdigester = RDigester(RDigester::Md5);
-            rdigester.setCtx(digestState);
-            
+            RDigester rdigester = RDigester(RDigester::Md5, digestState);
+
             std::cout << "digest ...\n";
             rdigester.update("world!2", 7);
             rdigester.update("world!2", 7);
